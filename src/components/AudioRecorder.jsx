@@ -17,9 +17,10 @@ const AudioRecorder = () => {
     const audioRef = useRef(null);
     const [duration, setDuration] = useState(0);
     const [recordingStartTime, setRecordingStartTime] = useState(null);
-    const [recordingEndTime, setRecordingEndTime] = useState(null);
     const [recordingDuration, setRecordingDuration] = useState(0);
+    const [timer, setTimer] = useState(0); // Track real-time duration
 
+    // Start or pause the audio playback
     const togglePlayPause = () => {
         if (audioRef.current) {
             if (isPlaying) {
@@ -31,6 +32,7 @@ const AudioRecorder = () => {
         }
     };
 
+    // Handle seeking within the audio using the progress bar
     const handleSeek = (value) => {
         if (audioRef.current && !isNaN(audioRef.current.duration)) {
             const seekTime = (value / 100) * audioRef.current.duration;
@@ -39,13 +41,14 @@ const AudioRecorder = () => {
         }
     };
 
+    // Update the progress bar as the audio plays
     const updateProgress = () => {
         if (audioRef.current && !isNaN(audioRef.current.duration)) {
             const currentTime = audioRef.current.currentTime;
-            const calculatedDuration = audioRef.current.duration;
-            const percent = (currentTime / calculatedDuration) * 100;
+            const totalDuration = audioRef.current.duration;
+            const percent = (currentTime / totalDuration) * 100;
             setProgress(percent);
-            setDuration(calculatedDuration);
+            setDuration(totalDuration);
         }
     };
 
@@ -57,32 +60,58 @@ const AudioRecorder = () => {
     };
 
     const handleStartRecording = () => {
-        setRecordingStartTime(new Date());
-        setRecordingEndTime(null);
         setRecordingDuration(0);
+        setRecordingStartTime(Date.now());
+        setTimer(0); 
         startRecording();
     };
 
     const handleStopRecording = () => {
-        const endTime = new Date();
-        setRecordingEndTime(endTime);
         stopRecording();
         if (recordingStartTime) {
+            const endTime = Date.now();
             const duration = (endTime - recordingStartTime) / 1000;
             setRecordingDuration(duration);
         }
+        setRecordingStartTime(null);
     };
 
+    // Track real-time recording duration
+    useEffect(() => {
+        let interval = null;
+        if (isRecording) {
+            interval = setInterval(() => {
+                setTimer((prevTime) => prevTime + 1); // Increment every second
+            }, 1000);
+        } else if (!isRecording) {
+            clearInterval(interval);
+        }
+
+        return () => clearInterval(interval);
+    }, [isRecording]);
+
+    // Add event listeners to update progress during playback
     useEffect(() => {
         if (audioRef.current) {
             const audio = audioRef.current;
-            audio.addEventListener('loadedmetadata', updateProgress);
+
+            // Sync progress bar and audio state during playback
             audio.addEventListener('timeupdate', updateProgress);
-            audio.addEventListener('ended', () => setIsPlaying(false));
+
+            // Set the duration once metadata is loaded
+            audio.addEventListener('loadedmetadata', () => {
+                setDuration(audio.duration);
+            });
+
+            // Reset progress when the audio ends
+            audio.addEventListener('ended', () => {
+                setIsPlaying(false);
+                setProgress(100);
+            });
 
             return () => {
-                audio.removeEventListener('loadedmetadata', updateProgress);
                 audio.removeEventListener('timeupdate', updateProgress);
+                audio.removeEventListener('loadedmetadata', updateProgress);
                 audio.removeEventListener('ended', () => setIsPlaying(false));
             };
         }
@@ -109,8 +138,9 @@ const AudioRecorder = () => {
                     <span className="hidden md:inline ml-2">Stop</span>
                 </button>
             </div>
+
             <div className='flex flex-col md:flex-row w-full justify-between gap-6'>
-                <div className='w-full md:w-[38%]'>
+                <div className='w-full md:w-[50%]'>
                     <div className="flex items-center gap-4">
                         <button
                             onClick={togglePlayPause}
@@ -137,14 +167,20 @@ const AudioRecorder = () => {
                         <span>{formatTime(audioRef.current?.currentTime || 0)}</span>
                         <span>{formatTime(duration)}</span>
                     </div>
+
+                    {isRecording && (
+                        <div className="text-sm text-gray-600 mt-4">
+                            <p className='font-semibold text-xl md:text-2xl'>Recording Time: {formatTime(timer)}</p>
+                        </div>
+                    )}
                     {recordingStartTime && (
                         <div className="text-sm text-gray-600 mt-4">
-                            <p className='font-semibold text-xl md:text-2xl'>Duration: {formatTime(recordingDuration )}</p>
+                            <p className='font-semibold text-xl md:text-2xl'>Recording Duration: {formatTime(recordingDuration)}</p>
                         </div>
                     )}
                 </div>
-                
-                <div className="h-64 w-full md:w-[60%]">
+
+                <div className="h-64 w-full md:w-[100%]">
                     <ResponsiveContainer width="100%" height="100%">
                         <LineChart data={visualizationData}>
                             <XAxis dataKey="x" hide />
