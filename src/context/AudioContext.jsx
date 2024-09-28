@@ -5,6 +5,7 @@ export const AudioContext = createContext();
 export const AudioProvider = ({ children }) => {
   const [isRecording, setIsRecording] = useState(false);
   const [audioUrl, setAudioUrl] = useState(null);
+  const [audioList, setAudioList] = useState([]); 
   const [visualizationData, setVisualizationData] = useState([]);
 
   const mediaRecorderRef = useRef(null);
@@ -24,10 +25,11 @@ export const AudioProvider = ({ children }) => {
         const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
         const audioUrl = URL.createObjectURL(audioBlob);
         setAudioUrl(audioUrl);
+        setAudioList(prevList => [...prevList, audioUrl]);
       };
 
       audioChunksRef.current = [];
-      mediaRecorderRef.current.start(100); // Collect data every 100ms
+      mediaRecorderRef.current.start(100);
       setIsRecording(true);
     } catch (error) {
       console.error('Error accessing microphone:', error);
@@ -49,10 +51,10 @@ export const AudioProvider = ({ children }) => {
         const audioData = new Float32Array(e.target.result);
         const newData = Array.from(audioData).map((value, index) => ({
           x: index,
-          y: value * 100 // Scale the values for better visibility
-        })).slice(0, 100); // Limit to 100 data points for performance
+          y: value * 100 
+        })).slice(0, 100);
 
-        setVisualizationData(prevData => [...prevData, ...newData].slice(-1000)); // Keep last 1000 points
+        setVisualizationData(prevData => [...prevData, ...newData].slice(-1000)); 
       };
       reader.readAsArrayBuffer(audioChunk);
     }
@@ -70,6 +72,7 @@ export const AudioProvider = ({ children }) => {
     <AudioContext.Provider value={{
       isRecording,
       audioUrl,
+      audioList, // Provide the list of recorded audio
       visualizationData,
       startRecording,
       stopRecording,
