@@ -89,8 +89,8 @@ const AudioRecorder = () => {
     }, [audioUrl]);
 
     return (
-        <div className="p-4 space-y-4 w-full max-w-4xl mx-auto text-whiteColor mb-10 flex flex-col items-start">
-            <p className='text-2xl md:text-[80px] font-semibold mb-4 mt-10'>Record Audio</p>
+        <div className="p-4 bg-baseColor space-y-4 w-full max-w-4xl mx-auto text-whiteColor mb-10 flex flex-col items-start">
+            <p className='text-3xl md:text-[80px] font-semibold mb-4 mt-10'>Record Audio</p>
             <div className="flex space-x-4 mb-6">
                 <button 
                     onClick={handleStartRecording} 

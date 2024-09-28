@@ -1,7 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { AppContext } from '../context/AppContext';
 import { Play, Pause } from 'lucide-react';
-import captions from '../assets/caption';
 
 const VideoPlayer = () => {
     const {
@@ -15,9 +14,6 @@ const VideoPlayer = () => {
     
     const [currentTime, setCurrentTime] = useState(0);
     const [duration, setDuration] = useState(0);
-    const [currentCaption, setCurrentCaption] = useState('');
-    const [isTyping, setIsTyping] = useState(false);
-    const [typeIndex, setTypeIndex] = useState(0);
 
     useEffect(() => {
         const video = videoRef.current;
@@ -47,51 +43,10 @@ const VideoPlayer = () => {
         };
     }, [videoRef]);
 
-    useEffect(() => {
-        const caption = captions.find(c => currentTime >= c.time);
-        if (caption) {
-            // Start typing effect when a new caption is found
-            setCurrentCaption(caption.translated); // Show translated text
-            setIsTyping(true);
-            setTypeIndex(0);
-        } else {
-            setCurrentCaption('');
-        }
-    }, [currentTime]);
-
-    useEffect(() => {
-        if (isTyping && currentCaption) {
-            const typingInterval = setInterval(() => {
-                setTypeIndex(prev => {
-                    const newIndex = prev + 1;
-                    if (newIndex > currentCaption.length) {
-                        clearInterval(typingInterval);
-                        setIsTyping(false);
-                        return prev; // Stop at the full length
-                    }
-                    return newIndex;
-                });
-            }, 100); // Adjust typing speed here
-
-            return () => clearInterval(typingInterval);
-        }
-    }, [isTyping, currentCaption]);
-
     const formatTime = (time) => {
         const minutes = Math.floor(time / 60);
         const seconds = Math.floor(time % 60);
         return `${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-    };
-
-    const handleCaptionChange = (e, type) => {
-        const newCaption = e.target.value;
-        // Logic to handle editing the caption
-        // You might want to update the corresponding caption in your captions array
-        if (type === 'original') {
-            // Update original caption logic
-        } else if (type === 'translated') {
-            setCurrentCaption(newCaption); // Updating the translated caption
-        }
     };
 
     return (
@@ -138,41 +93,7 @@ const VideoPlayer = () => {
                     <span>{formatTime(currentTime)}</span>
                     <span>{formatTime(duration)}</span>
                 </div>
-                {/* Dialogue Display */}
-                <div className="mt-4">
-                    <h3 className="text-lg font-semibold text-gray-300 mb-1">Dialogue</h3>
-                    <div className="p-2 bg-gray-700 text-white rounded-md">
-                        {/* Show typed text */}
-                        {currentCaption.slice(0, typeIndex)}
-                        {/* Optional typing effect cursor */}
-                        {isTyping && <span className="animate-pulse">|</span>}
-                    </div>
-                </div>
-                {/* Editable Fields for Original and Translated Text */}
-                <div className="mt-4">
-                    <h3 className="text-lg font-semibold text-gray-300 mb-1">Edit Captions</h3>
-                    <input
-                        type="text"
-                        placeholder="Original Text"
-                        onChange={(e) => handleCaptionChange(e, 'original')}
-                        className="w-full p-2 mb-2 rounded-md text-black"
-                    />
-                    <input
-                        type="text"
-                        placeholder="Translated Text"
-                        value={currentCaption} // Reflect the current translated caption
-                        onChange={(e) => handleCaptionChange(e, 'translated')}
-                        className="w-full p-2 rounded-md text-black"
-                    />
-                </div>
-                {/* Audio Signal Visualization */}
-                <div className="mt-4">
-                    <h3 className="text-lg font-semibold text-gray-300 mb-1">Audio Signal</h3>
-                    <div className="w-full h-2 bg-gray-600">
-                        {/* Placeholder for audio signal - can be enhanced with an actual visualization */}
-                        <div className="h-full bg-blue-500" style={{ width: `${(currentTime / duration) * 100}%` }} />
-                    </div>
-                </div>
+                
             </div>
         </div>
     );
