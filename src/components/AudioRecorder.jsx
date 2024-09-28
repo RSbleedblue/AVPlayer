@@ -15,7 +15,7 @@ const AudioRecorder = () => {
 
     const [currentAudio, setCurrentAudio] = useState(null);
     const [isPlaying, setIsPlaying] = useState(false);
-    const audioRefs = useRef([]); // Array of audio refs
+    const audioRefs = useRef([]); 
 
     const playAudio = (audioUrl, index) => {
         if (currentAudio !== audioUrl) {
@@ -105,7 +105,7 @@ const AudioRecorder = () => {
                                         )}
                                     </button>
                                     <audio
-                                        ref={(el) => (audioRefs.current[index] = el)} // Assign audio ref to array
+                                        ref={(el) => (audioRefs.current[index] = el)} 
                                         src={audio}
                                         className="hidden"
                                     />
