@@ -2,6 +2,16 @@ import React, { useContext, useEffect, useState } from 'react';
 import { AppContext } from '../context/AppContext';
 import { Play, Pause } from 'lucide-react';
 
+const captions = [
+    { start: 0, end: 5, text: { en: 'A car driving at night.', es: 'Un coche conduciendo por la noche.' } },
+    { start: 6, end: 10, text: { en: 'The road is clear.', es: 'El camino está despejado.' } },
+    { start: 11, end: 15, text: { en: 'Heading to the city.', es: 'Dirigiéndose a la ciudad.' } },
+    { start: 16, end: 20, text: { en: 'The lights flicker in the distance.', es: 'Las luces parpadean a lo lejos.' } },
+    { start: 21, end: 25, text: { en: 'Traffic begins to build.', es: 'El tráfico comienza a acumularse.' } },
+    { start: 26, end: 30, text: { en: 'The driver checks the time.', es: 'El conductor mira la hora.' } },
+    { start: 31, end: 39, text: { en: 'The city skyline appears.', es: 'Aparece el horizonte de la ciudad.' } },
+];
+
 const VideoPlayer = () => {
     const {
         isPlaying,
@@ -14,6 +24,8 @@ const VideoPlayer = () => {
     
     const [currentTime, setCurrentTime] = useState(0);
     const [duration, setDuration] = useState(0);
+    const [currentCaption, setCurrentCaption] = useState('');
+    const [language, setLanguage] = useState('en'); 
 
     useEffect(() => {
         const video = videoRef.current;
@@ -21,6 +33,7 @@ const VideoPlayer = () => {
         const updateCurrentTime = () => {
             if (video) {
                 setCurrentTime(video.currentTime);
+                updateCaption(video.currentTime);
             }
         };
 
@@ -41,7 +54,18 @@ const VideoPlayer = () => {
                 video.removeEventListener('loadedmetadata', updateDuration);
             }
         };
-    }, [videoRef]);
+    }, [videoRef, language]);
+
+    const updateCaption = (time) => {
+        const caption = captions.find(
+            (caption) => time >= caption.start && time <= caption.end
+        );
+        if (caption) {
+            setCurrentCaption(caption.text[language]);
+        } else {
+            setCurrentCaption(''); 
+        }
+    };
 
     const formatTime = (time) => {
         const minutes = Math.floor(time / 60);
@@ -52,7 +76,7 @@ const VideoPlayer = () => {
     return (
         <div className="flex flex-col bg-brown backdrop-blur-md bg-opacity-30 lg:flex-row text-whiteColor p-4 lg:p-6 rounded-lg w-full lg:w-[80%] mx-auto shadow-md">
             {/* Video Section */}
-            <div className="w-full lg:w-[50%] mb-4 lg:mb-0">
+            <div className="relative w-full lg:w-[50%] mb-4 lg:mb-0">
                 <video
                     ref={videoRef}
                     width="100%"
@@ -61,10 +85,17 @@ const VideoPlayer = () => {
                     className="rounded-2xl shadow-xl"
                 >
                     <source
-                        src="https://videos.pexels.com/video-files/3554563/3554563-hd_1920_1080_30fps.mp4" 
-                        type="video/mp4" />
+                        src="https://videos.pexels.com/video-files/3554563/3554563-hd_1920_1080_30fps.mp4"
+                        type="video/mp4"
+                    />
                     Your browser does not support the video tag.
                 </video>
+                {/* Caption Overlay */}
+                <div className="absolute bottom-10 w-full text-center">
+                    <p className="text-lg lg:text-xl bg-black bg-opacity-50 text-white py-2 px-4 rounded-md">
+                        {currentCaption}
+                    </p>
+                </div>
             </div>
             {/* Info and Controls Section */}
             <div className="w-full lg:w-[50%] flex flex-col justify-center lg:px-6 text-white">
@@ -93,7 +124,20 @@ const VideoPlayer = () => {
                     <span>{formatTime(currentTime)}</span>
                     <span>{formatTime(duration)}</span>
                 </div>
-                
+
+                {/* Language Selector */}
+                <div className="mt-4">
+                    <label className="text-sm text-gray-300 mr-2">Translate Language: </label>
+                    <select
+                        value={language}
+                        onChange={(e) => setLanguage(e.target.value)}
+                        className="bg-baseColor text-white rounded p-2 text-xs"
+                    >
+                        <option value="en">English</option>
+                        <option value="es">Spanish</option>
+                        {/* Add more languages here */}
+                    </select>
+                </div>
             </div>
         </div>
     );
