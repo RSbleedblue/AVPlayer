@@ -55,7 +55,6 @@ const VideoPlayer = () => {
             }
         };
     }, [videoRef, language]);
-
     const updateCaption = (time) => {
         const caption = captions.find(
             (caption) => time >= caption.start && time <= caption.end
@@ -66,15 +65,13 @@ const VideoPlayer = () => {
             setCurrentCaption(''); 
         }
     };
-
     const formatTime = (time) => {
         const minutes = Math.floor(time / 60);
         const seconds = Math.floor(time % 60);
         return `${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
     };
-
     return (
-        <div className="flex flex-col bg-brown backdrop-blur-md bg-opacity-30 lg:flex-row text-whiteColor p-4 lg:p-6 rounded-lg w-full lg:w-[80%] mx-auto shadow-md">
+        <div className="flex flex-col bg-brown backdrop-blur-md bg-opacity-30 lg:flex-row text-whiteColor p-4 lg:p-6 rounded-b-lg w-full lg:w-[80%] mx-auto shadow-md">
             {/* Video Section */}
             <div className="relative w-full lg:w-[50%] mb-4 lg:mb-0">
                 <video
